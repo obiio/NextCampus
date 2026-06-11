@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>NextCampus Admin | IMSU Prep Dashboard</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      padding: 32px 24px;
+    }
+
+    .admin-container {
+      max-width: 1400px;
+      width: 100%;
+      background: white;
+      border-radius: 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #0a0f2a 0%, #0f172b 100%);
+      padding: 1.5rem 2rem;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      border-bottom: 3px solid #fbbf24;
+    }
+    .logo-area h1 {
+      font-weight: 800;
+      font-size: 1.8rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff, #fbbf24);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .logo-area p {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 6px;
+    }
+    .badge {
+      background: #fbbf24;
+      color: #0f172b;
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .admin-nav {
+      display: flex;
+      background: #ffffff;
+      border-bottom: 2px solid #e2e8f0;
+      padding: 0 2rem;
+      gap: 0.25rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      flex-wrap: wrap;
+    }
+    .nav-link {
+      background: transparent;
+      border: none;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #475569;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-link i {
+      font-size: 1rem;
+    }
+    .nav-link.active {
+      color: #f59e0b;
+      border-bottom-color: #f59e0b;
+      background: #fffbeb;
+    }
+    .nav-link:hover:not(.active) {
+      color: #0f172b;
+      background: #f8fafc;
+    }
+
+    .page {
+      display: none;
+      padding: 2rem;
+      animation: fadeIn 0.25s ease;
+    }
+    .page.active-page {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid #eef2f6;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .section-title {
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-left: 4px solid #f59e0b;
+      padding-left: 16px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+      color: #334155;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      transition: 0.2s;
+      font-size: 0.9rem;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #f59e0b;
+      box-shadow: 0 0 0 3px rgba(245,158,11,0.1);
+    }
+    button {
+      background: #0f172b;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+    }
+    button.primary {
+      background: #f59e0b;
+      color: #0f172b;
+    }
+    button.primary:hover {
+      background: #e08e00;
+      transform: translateY(-1px);
+    }
+    button.danger {
+      background: #ef4444;
+    }
+    button.danger:hover {
+      background: #dc2626;
+    }
+    button.success {
+      background: #22c55e;
+    }
+    button.success:hover {
+      background: #16a34a;
+    }
+    .list-item {
+      background: #f9fafb;
+      border-radius: 1rem;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.7rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #edf2f7;
+    }
+    .course-badge {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 8px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    th {
+      background: #f8fafc;
+      font-weight: 600;
+    }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 60px;
+      z-index: 1000;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      font-size: 0.85rem;
+    }
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .price-preview {
+      background: #fef3c7;
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    hr {
+      margin: 1rem 0;
+    }
+    @media (max-width: 700px) {
+      .admin-nav { padding: 0 0.5rem; }
+      .nav-link { padding: 0.8rem 1rem; font-size: 0.75rem; }
+      .page { padding: 1rem; }
+    }
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+<div class="admin-container">
+  <div class="header">
+    <div class="logo-area">
+      <h1><i class="fas fa-graduation-cap"></i> NextCampus Admin</h1>
+      <p>IMSU PostUTME Prep Platform • Powered by Firebase</p>
+    </div>
+    <div class="badge"><i class="fas fa-cog"></i> Admin Dashboard</div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="admin-nav">
+    <button class="nav-link active" data-page="dashboard"><i class="fas fa-chart-line"></i> Dashboard</button>
+    <button class="nav-link" data-page="pricing"><i class="fas fa-tag"></i> Pricing</button>
+    <button class="nav-link" data-page="courses"><i class="fas fa-book-open"></i> Courses & Questions</button>
+    <button class="nav-link" data-page="users"><i class="fas fa-users"></i> Registered Users</button>
+    <button class="nav-link" data-page="coupons"><i class="fas fa-ticket-alt"></i> Coupon Manager</button>
+  </div>
+
+  <!-- DASHBOARD PAGE -->
+  <div id="dashboard" class="page active-page">
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-title"><i class="fas fa-chart-line"></i> Platform Analytics</div>
+        <div id="statsOverview" style="line-height: 2.2;">Loading metrics...</div>
+        <hr>
+        <div><i class="fas fa-stopwatch"></i> <strong>Exam Config:</strong> 15 questions/course | 10 min timer | 4 subjects</div>
+      </div>
+      <div class="card">
+        <div class="section-title"><i class="fas fa-tag"></i> Current Pricing</div>
+        <div id="currentPriceDisplay" style="font-size: 1.5rem; font-weight: 700; color: #f59e0b; text-align: center; padding: 1rem;">Loading...</div>
+        <div class="question-preview" style="text-align: center;">This is the access fee shown on the signup page</div>
+        <button id="goToPricingBtn" class="primary" style="margin-top: 20px; width: 100%;"><i class="fas fa-edit"></i> Manage Pricing</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title"><i class="fas fa-user-plus"></i> Recent Signups (Latest 5)</div>
+      <div id="recentUsersList">No candidates yet</div>
+    </div>
+  </div>
+
+  <!-- PRICING SETTINGS PAGE -->
+  <div id="pricing" class="page">
+    <div class="card">
+      <div class="section-title"><i class="fas fa-tag"></i> Platform Pricing Settings</div>
+      <p class="question-preview" style="margin-bottom: 1rem;">This price will be displayed on the signup page when users request a coupon code.</p>
+      
+      <div class="form-group">
+        <label><i class="fas fa-money-bill-wave"></i> Access Fee (Coupon Price)</label>
+        <div class="flex-between" style="gap: 12px; flex-wrap: wrap;">
+          <input type="text" id="priceInput" placeholder="e.g., ₦2,500 or ₦3,000" style="flex: 2;">
+          <button id="savePriceBtn" class="primary"><i class="fas fa-save"></i> Save Price</button>
+        </div>
+      </div>
+      
+      <div class="price-preview">
+        <span><i class="fas fa-eye"></i> Preview on Signup Page:</span>
+        <span style="font-weight: 700; font-size: 1.1rem;" id="pricePreview">₦2,000</span>
+        <span class="course-badge"><i class="fab fa-whatsapp"></i> Users click "Get Coupon Code" to purchase</span>
+      </div>
+      
+      <hr>
+      
+      <div class="form-group">
+        <label><i class="fab fa-whatsapp"></i> WhatsApp Number (for coupon requests)</label>
+        <div class="flex-between" style="gap: 12px; flex-wrap: wrap;">
+          <input type="tel" id="whatsappNumberInput" placeholder="e.g., 08077615702" style="flex: 2;">
+          <button id="saveWhatsappBtn" class="primary"><i class="fas fa-save"></i> Save Number</button>
+        </div>
+        <div class="question-preview" style="margin-top: 8px;">
+          <i class="fas fa-info-circle"></i> Format: 10-11 digits without country code (e.g., 08077615702)
+        </div>
+      </div>
+      
+      <hr>
+      
+      <div class="flex-between" style="margin-top: 1rem;">
+        <div>
+          <strong>Current Settings:</strong><br>
+          <span id="currentPriceValue" class="course-badge" style="background:#fef3c7;">Loading...</span>
+          <span id="currentWhatsappValue" class="course-badge" style="background:#e0f2fe;">Loading...</span>
+        </div>
+        <button id="resetSettingsBtn" class="danger"><i class="fas fa-undo-alt"></i> Reset to Default</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COURSES & QUESTIONS PAGE -->
+  <div id="courses" class="page">
+    <div class="card">
+      <div class="flex-between">
+        <h3><i class="fas fa-layer-group"></i> Manage Courses</h3>
+        <button id="addCourseBtn" class="primary"><i class="fas fa-plus"></i> New Course</button>
+      </div>
+      <div id="coursesListContainer" style="margin-top: 1rem;"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="fas fa-question-circle"></i> Add Question (with Exam Year)</div>
+      <div class="grid-2">
+        <div><label>Select Course *</label><select id="questionCourseSelect"></select></div>
+        <div><label>Exam Year *</label><input type="number" id="questionYear" placeholder="e.g., 2024" value="2024"></div>
+        <div style="grid-column: span 2;"><label>Question Text</label><textarea id="questionText" rows="2" placeholder="Type the full question..."></textarea></div>
+        <div><label>Option A</label><input id="optA" placeholder="Option A"></div>
+        <div><label>Option B</label><input id="optB" placeholder="Option B"></div>
+        <div><label>Option C</label><input id="optC" placeholder="Option C"></div>
+        <div><label>Option D</label><input id="optD" placeholder="Option D"></div>
+        <div><label>Correct Answer (A/B/C/D)</label><input id="correctAns" maxlength="1" placeholder="A, B, C or D"></div>
+      </div>
+      <button id="addQuestionBtn" class="primary" style="margin-top: 12px;"><i class="fas fa-save"></i> Add Question with Year</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><i class="fas fa-trash-alt"></i> Remove Question</div>
+      <div class="flex-between" style="gap: 12px; flex-wrap:wrap;">
+        <select id="removeCourseSelect" style="flex: 2;"></select>
+        <select id="removeQuestionSelect" style="flex: 3;"></select>
+        <button id="confirmRemoveQuestionBtn" class="danger"><i class="fas fa-trash"></i> Remove</button>
+      </div>
+      <div id="questionPreviewInfo" class="question-preview"></div>
+    </div>
+  </div>
+
+  <!-- USERS PAGE -->
+  <div id="users" class="page">
+    <div class="card">
+      <div class="section-title"><i class="fas fa-address-book"></i> All Registered Candidates</div>
+      <div class="table-wrapper" style="overflow-x: auto;">
+        <table id="usersTable">
+          <thead><tr><th>Full Name</th><th>Email</th><th>Phone</th><th>Coupon Used</th><th>Enrolled Courses (4)</th><th>Registration Date</th></tr></thead>
+          <tbody id="usersTableBody"><tr><td colspan="6">Loading registered users...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUPONS PAGE -->
+  <div id="coupons" class="page">
+    <div class="card">
+      <div class="section-title"><i class="fas fa-qrcode"></i> Generate Coupon Codes</div>
+      <div class="grid-2" style="gap: 12px; margin-bottom: 20px;">
+        <input type="text" id="customCouponInput" placeholder="Optional custom code (e.g., NEXT2024)">
+        <div>
+          <label style="margin-bottom: 6px;">Validity Period (Days)</label>
+          <input type="number" id="couponValidityDays" placeholder="Days valid" value="30" min="1" max="365">
+        </div>
+      </div>
+      <button id="generateCouponPageBtn" type="button" class="primary" style="width: 100%;" onclick="handleGenerateCouponClick()"><i class="fas fa-magic"></i> Generate Coupon</button>
+      <div id="couponActionStatus" style="margin-top: 10px; color: #0f172b; font-weight: 600;"></div>
+      <div style="margin-top: 20px;"><strong>Active Unused Coupons</strong> <span id="couponCount" class="course-badge" style="background:#fef3c7;">0</span></div>
+      <div id="couponsListContainer" style="max-height: 380px; overflow-y: auto; margin-top: 1rem;"></div>
+      <hr>
+      <div class="question-preview"><i class="fas fa-info-circle"></i> Students redeem coupon during signup. Single-use only. Each coupon has an expiry date.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyCtT770pdncuDOr922v9TVKZoV1mXq3Fv0",
+    authDomain: "postutme-dd4bd.firebaseapp.com",
+    projectId: "postutme-dd4bd",
+    storageBucket: "postutme-dd4bd.firebasestorage.app",
+    messagingSenderId: "788380308048",
+    appId: "1:788380308048:web:600d975edcfcbeaa0bb755",
+    measurementId: "G-X3KDBHRWDG"
+  };
+  
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  
+  // Collections references
+  const coursesRef = db.collection("courses");
+  const questionsRef = db.collection("questions");
+  const usersRef = db.collection("registeredUsers");
+  const couponsRef = db.collection("coupons");
+  const settingsRef = db.collection("settings").doc("platform");
+
+  // Helper: Toast message
+  function showToast(msg, isError = false) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
+    toast.style.background = isError ? '#b91c1c' : '#0f172b';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2800);
+  }
+
+  // ----------------------------- PRICING SETTINGS -----------------------------
+  async function loadPricingSettings() {
+    try {
+      const doc = await settingsRef.get();
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.price) {
+          document.getElementById("priceInput").value = data.price;
+          document.getElementById("pricePreview").innerHTML = data.price;
+          document.getElementById("currentPriceValue").innerHTML = `<i class="fas fa-tag"></i> ${data.price}`;
+          document.getElementById("currentPriceDisplay").innerHTML = data.price;
+        }
+        if (data.whatsappNumber) {
+          document.getElementById("whatsappNumberInput").value = data.whatsappNumber;
+          document.getElementById("currentWhatsappValue").innerHTML = `<i class="fab fa-whatsapp"></i> ${data.whatsappNumber}`;
+        }
+      } else {
+        // Create default settings
+        await settingsRef.set({
+          price: "₦2,000",
+          whatsappNumber: "08077615702",
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        document.getElementById("priceInput").value = "₦2,000";
+        document.getElementById("pricePreview").innerHTML = "₦2,000";
+        document.getElementById("currentPriceValue").innerHTML = "<i class='fas fa-tag'></i> ₦2,000";
+        document.getElementById("currentPriceDisplay").innerHTML = "₦2,000";
+        document.getElementById("whatsappNumberInput").value = "08077615702";
+        document.getElementById("currentWhatsappValue").innerHTML = "<i class='fab fa-whatsapp'></i> 08077615702";
+      }
+    } catch (error) {
+      console.error("Error loading settings:", error);
+    }
+  }
+
+  async function savePrice() {
+    const price = document.getElementById("priceInput").value.trim();
+    if (!price) {
+      showToast("Please enter a valid price", true);
+      return;
+    }
+    try {
+      await settingsRef.update({
+        price: price,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      document.getElementById("pricePreview").innerHTML = price;
+      document.getElementById("currentPriceValue").innerHTML = `<i class="fas fa-tag"></i> ${price}`;
+      document.getElementById("currentPriceDisplay").innerHTML = price;
+      showToast("Price updated successfully!");
+    } catch (error) {
+      showToast("Error updating price: " + error.message, true);
+    }
+  }
+
+  async function saveWhatsappNumber() {
+    let number = document.getElementById("whatsappNumberInput").value.trim();
+    if (!number) {
+      showToast("Please enter a valid WhatsApp number", true);
+      return;
+    }
+    // Remove any non-digit characters
+    number = number.replace(/\D/g, '');
+    if (number.length < 10 || number.length > 13) {
+      showToast("Please enter a valid phone number (10-13 digits)", true);
+      return;
+    }
+    try {
+      await settingsRef.update({
+        whatsappNumber: number,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      document.getElementById("currentWhatsappValue").innerHTML = `<i class="fab fa-whatsapp"></i> ${number}`;
+      showToast("WhatsApp number updated successfully!");
+    } catch (error) {
+      showToast("Error updating WhatsApp number: " + error.message, true);
+    }
+  }
+
+  async function resetSettings() {
+    if (confirm("Reset all settings to default? (Price: ₦2,000, WhatsApp: 08077615702)")) {
+      try {
+        await settingsRef.set({
+          price: "₦2,000",
+          whatsappNumber: "08077615702",
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        document.getElementById("priceInput").value = "₦2,000";
+        document.getElementById("pricePreview").innerHTML = "₦2,000";
+        document.getElementById("currentPriceValue").innerHTML = "<i class='fas fa-tag'></i> ₦2,000";
+        document.getElementById("currentPriceDisplay").innerHTML = "₦2,000";
+        document.getElementById("whatsappNumberInput").value = "08077615702";
+        document.getElementById("currentWhatsappValue").innerHTML = "<i class='fab fa-whatsapp'></i> 08077615702";
+        showToast("Settings reset to default!");
+      } catch (error) {
+        showToast("Error resetting settings: " + error.message, true);
+      }
+    }
+  }
+
+  // ----------------------------- COURSES RENDERING -----------------------------
+  async function renderCoursesList() {
+    try {
+      const snap = await coursesRef.get();
+      const container = document.getElementById("coursesListContainer");
+      if (snap.empty) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i> No courses yet. Click "New Course" to begin.</div>';
+        return;
+      }
+      let html = `<div style="display:flex; flex-wrap:wrap; gap:12px;">`;
+      for (const doc of snap.docs) {
+        const qSnap = await questionsRef.where("courseId", "==", doc.id).get();
+        html += `<div class="list-item" style="justify-content: space-between;">
+                    <div><strong>${escapeHtml(doc.data().name)}</strong> <span class="course-badge">${qSnap.size} questions</span></div>
+                    <button class="delCourseBtn" data-id="${doc.id}" style="background:#ef4444; padding:6px 14px;"><i class="fas fa-trash"></i> Delete</button>
+                  </div>`;
+      }
+      html += `</div>`;
+      container.innerHTML = html;
+      document.querySelectorAll(".delCourseBtn").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          const id = btn.dataset.id;
+          const relQuestions = await questionsRef.where("courseId", "==", id).get();
+          if (!relQuestions.empty) {
+            showToast("Cannot delete course: remove all questions first", true);
+            return;
+          }
+          await coursesRef.doc(id).delete();
+          showToast("Course removed successfully");
+          renderCoursesList();
+          populateCourseSelects();
+        });
+      });
+      populateCourseSelects();
+    } catch (err) {
+      console.error(err);
+      showToast("Error loading courses", true);
+    }
+  }
+
+  async function populateCourseSelects() {
+    const snap = await coursesRef.get();
+    let options = `<option value="">-- Select Course --</option>`;
+    snap.forEach(doc => { options += `<option value="${doc.id}">${escapeHtml(doc.data().name)}</option>`; });
+    document.getElementById("questionCourseSelect").innerHTML = options;
+    document.getElementById("removeCourseSelect").innerHTML = options;
+    if (snap.docs.length) await loadQuestionsForRemoval(snap.docs[0].id);
+    document.getElementById("removeCourseSelect").addEventListener("change", (e) => loadQuestionsForRemoval(e.target.value));
+  }
+
+  async function loadQuestionsForRemoval(courseId) {
+    if (!courseId) {
+      document.getElementById("removeQuestionSelect").innerHTML = `<option value="">-- No course selected --</option>`;
+      return;
+    }
+    const qSnap = await questionsRef.where("courseId", "==", courseId).orderBy("year", "desc").get();
+    let selectHtml = `<option value="">-- Choose question --</option>`;
+    qSnap.forEach(doc => {
+      const q = doc.data();
+      selectHtml += `<option value="${doc.id}">[${q.year}] ${q.text.substring(0, 60)}...</option>`;
+    });
+    document.getElementById("removeQuestionSelect").innerHTML = selectHtml;
+    document.getElementById("removeQuestionSelect").onchange = () => {
+      const selectedId = document.getElementById("removeQuestionSelect").value;
+      if (selectedId) {
+        const qData = qSnap.docs.find(d => d.id === selectedId)?.data();
+        if (qData) document.getElementById("questionPreviewInfo").innerHTML = `<i class="fas fa-info-circle"></i> "${qData.text}" (Year: ${qData.year}) - Correct: ${qData.correct}`;
+        else document.getElementById("questionPreviewInfo").innerHTML = "";
+      } else document.getElementById("questionPreviewInfo").innerHTML = "";
+    };
+  }
+
+  async function addNewQuestion() {
+    const courseId = document.getElementById("questionCourseSelect").value;
+    if (!courseId) { showToast("Please select a course", true); return; }
+    const year = parseInt(document.getElementById("questionYear").value);
+    if (!year || year < 1980 || year > 2030) { showToast("Enter valid year (1980-2030)", true); return; }
+    const text = document.getElementById("questionText").value.trim();
+    const optA = document.getElementById("optA").value.trim();
+    const optB = document.getElementById("optB").value.trim();
+    const optC = document.getElementById("optC").value.trim();
+    const optD = document.getElementById("optD").value.trim();
+    const correct = document.getElementById("correctAns").value.trim().toUpperCase();
+    if (!text || !optA || !optB || !optC || !optD || !["A","B","C","D"].includes(correct)) {
+      showToast("All fields required & correct answer must be A,B,C or D", true);
+      return;
+    }
+    try {
+      await questionsRef.add({
+        courseId,
+        year,
+        text,
+        optA, optB, optC, optD,
+        correct,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      showToast(`Question added for year ${year} ✅`);
+      document.getElementById("questionText").value = "";
+      document.getElementById("optA").value = ""; document.getElementById("optB").value = ""; document.getElementById("optC").value = ""; document.getElementById("optD").value = ""; document.getElementById("correctAns").value = "";
+      renderCoursesList();
+      const currentCourse = document.getElementById("removeCourseSelect").value;
+      if (currentCourse === courseId) loadQuestionsForRemoval(courseId);
+    } catch (err) { showToast("Firebase error: " + err.message, true); }
+  }
+
+  async function removeSelectedQuestion() {
+    const qid = document.getElementById("removeQuestionSelect").value;
+    if (!qid) { showToast("Select a question to remove", true); return; }
+    await questionsRef.doc(qid).delete();
+    showToast("Question removed");
+    renderCoursesList();
+    const currentCourse = document.getElementById("removeCourseSelect").value;
+    if (currentCourse) loadQuestionsForRemoval(currentCourse);
+    document.getElementById("questionPreviewInfo").innerHTML = "";
+  }
+
+  // ----------------------------- USERS -----------------------------
+  async function renderUsers() {
+    try {
+      const snap = await usersRef.orderBy("regDate", "desc").get();
+      const tbody = document.getElementById("usersTableBody");
+      if (snap.empty) {
+        tbody.innerHTML = "<tr><td colspan='6'>No registered users yet</td></tr>";
+        document.getElementById("recentUsersList").innerHTML = "<div class='empty-state'>No recent signups</div>";
+        return;
+      }
+      let rows = "";
+      snap.forEach(doc => {
+        const u = doc.data();
+        rows += `<tr>
+                   <td>${escapeHtml(u.name || 'N/A')}</td>
+                   <td>${escapeHtml(u.email || 'N/A')}</td>
+                   <td>${escapeHtml(u.phone || 'N/A')}</td>
+                   <td><span class="course-badge">${escapeHtml(u.couponCode || '-')}</span></td>
+                   <td>${(u.courses || []).map(c => escapeHtml(c)).join(', ')}</td>
+                   <td>${u.regDate?.toDate ? u.regDate.toDate().toLocaleDateString() : 'Just now'}</td>
+                 </tr>`;
+      });
+      tbody.innerHTML = rows;
+      const recent = snap.docs.slice(0,5).map(d => `<div class="list-item"><i class="fas fa-user"></i> ${d.data().name} (${d.data().email}) - ${(d.data().courses || []).join(', ')}</div>`).join("");
+      document.getElementById("recentUsersList").innerHTML = recent || "No recent signups";
+    } catch(e) { console.error(e); }
+  }
+
+  // ----------------------------- COUPONS -----------------------------
+  async function renderCoupons() {
+    try {
+      const snap = await couponsRef.where("used", "==", false).get();
+      document.getElementById("couponCount").innerHTML = snap.size;
+      let html = "";
+      snap.forEach(doc => {
+        const data = doc.data();
+        let expiryInfo = '';
+        if (data.expiryDate) {
+          let expiryDate;
+          if (data.expiryDate.toDate) {
+            expiryDate = data.expiryDate.toDate();
+          } else {
+            expiryDate = new Date(data.expiryDate);
+          }
+          const today = new Date();
+          const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+          const expiryFormatted = expiryDate.toLocaleDateString();
+          
+          if (daysLeft > 0) {
+            expiryInfo = ` • Expires: ${expiryFormatted} (${daysLeft} days)`;
+          } else {
+            expiryInfo = ` • EXPIRED on ${expiryFormatted}`;
+          }
+        }
+        html += `<div class="list-item"><span class="course-badge" style="background:#fef3c7;"><i class="fas fa-tag"></i> ${doc.id}${expiryInfo}</span><button class="revokeCouponBtn" data-code="${doc.id}" style="background:#475569">Revoke</button></div>`;
+      });
+      document.getElementById("couponsListContainer").innerHTML = html || "<div class='empty-state'>No active coupons. Generate new ones.</div>";
+      document.querySelectorAll(".revokeCouponBtn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          await couponsRef.doc(btn.dataset.code).delete();
+          showToast("Coupon revoked");
+          renderCoupons();
+        });
+      });
+    } catch (error) {
+      console.error('Error rendering coupons:', error);
+      showToast('Unable to load coupon list: ' + (error.message || error), true);
+    }
+  }
+
+  async function generateCoupon(custom = null) {
+    try {
+      let code = custom && custom.trim() !== "" ? custom.trim().toUpperCase() : Math.random().toString(36).substring(2, 12).toUpperCase();
+      if (!code) {
+        showToast('Coupon code generation failed', true);
+        return;
+      }
+      const existing = await couponsRef.doc(code).get();
+      if (existing.exists) { showToast("Coupon code already exists", true); return; }
+      
+      // Get validity days from input or default to 30
+      let validityDays = 30;
+      const validityDaysInput = document.getElementById("couponValidityDays");
+      if (validityDaysInput && validityDaysInput.value) {
+        const parsed = parseInt(validityDaysInput.value);
+        if (!isNaN(parsed) && parsed > 0) {
+          validityDays = parsed;
+        }
+      }
+      
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + validityDays);
+      console.log('Creating coupon', { code, validityDays, expiryDate });
+      
+      await couponsRef.doc(code).set({ 
+        used: false, 
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        expiryDate: expiryDate.toISOString(),
+        expiryTimestamp: expiryDate.getTime(),
+        validityDays: validityDays
+      });
+      showToast(`Coupon ${code} generated (valid for ${validityDays} days)`);
+      document.getElementById('couponActionStatus').textContent = `Coupon ${code} created successfully.`;
+      await renderCoupons();
+    } catch (error) {
+      console.error("Error generating coupon:", error);
+      document.getElementById('couponActionStatus').textContent = 'Coupon generation failed. See console.';
+      showToast("Error generating coupon: " + (error.message || error), true);
+    }
+  }
+
+  async function handleGenerateCouponClick() {
+    document.getElementById('couponActionStatus').textContent = 'Generating coupon...';
+    const custom = document.getElementById("customCouponInput") ? document.getElementById("customCouponInput").value : null;
+    await generateCoupon(custom);
+    document.getElementById("customCouponInput").value = "";
+    document.getElementById("couponValidityDays").value = "30";
+  }
+
+  // ----------------------------- STATS -----------------------------
+  async function loadStats() {
+    try {
+      const users = await usersRef.get();
+      const courses = await coursesRef.get();
+      const questions = await questionsRef.get();
+      const coupons = await couponsRef.where("used","==",false).get();
+      document.getElementById("statsOverview").innerHTML = `
+        <div><i class="fas fa-users"></i> Registered Users: ${users.size}</div>
+        <div><i class="fas fa-layer-group"></i> Active Courses: ${courses.size}</div>
+        <div><i class="fas fa-question"></i> Total Questions: ${questions.size}</div>
+        <div><i class="fas fa-ticket-alt"></i> Live Coupons: ${coupons.size}</div>
+      `;
+    } catch(e) { document.getElementById("statsOverview").innerHTML = "Error loading stats"; }
+  }
+
+  function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+  // Navigation
+  function initNavigation() {
+    const navBtns = document.querySelectorAll(".nav-link");
+    const pages = document.querySelectorAll(".page");
+    navBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-page");
+        navBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        pages.forEach(page => page.classList.remove("active-page"));
+        document.getElementById(targetId).classList.add("active-page");
+        if (targetId === "users") renderUsers();
+        if (targetId === "coupons") renderCoupons();
+        if (targetId === "dashboard") { loadStats(); loadPricingSettings(); }
+        if (targetId === "pricing") loadPricingSettings();
+        if (targetId === "courses") { renderCoursesList(); if(document.getElementById("removeCourseSelect").value) loadQuestionsForRemoval(document.getElementById("removeCourseSelect").value); }
+      });
+    });
+  }
+
+  // DOM Ready
+  document.addEventListener("DOMContentLoaded", async () => {
+    initNavigation();
+    await renderCoursesList();
+    await renderUsers();
+    await renderCoupons();
+    await loadStats();
+    await loadPricingSettings();
+    
+    // Pricing buttons
+    document.getElementById("savePriceBtn").addEventListener("click", savePrice);
+    document.getElementById("saveWhatsappBtn").addEventListener("click", saveWhatsappNumber);
+    document.getElementById("resetSettingsBtn").addEventListener("click", resetSettings);
+    document.getElementById("goToPricingBtn").addEventListener("click", () => {
+      document.querySelector('[data-page="pricing"]').click();
+    });
+    
+    // Course management
+    document.getElementById("addCourseBtn").addEventListener("click", async () => {
+      let name = prompt("Enter course name (e.g., English, Government, Economics):");
+      if (name) { await coursesRef.add({ name: name.trim() }); renderCoursesList(); showToast(`Course "${name}" added`); }
+    });
+    document.getElementById("addQuestionBtn").addEventListener("click", addNewQuestion);
+    document.getElementById("confirmRemoveQuestionBtn").addEventListener("click", removeSelectedQuestion);
+  });
+</script>
+</body>
+</html>
