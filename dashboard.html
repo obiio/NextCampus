@@ -944,7 +944,7 @@
     <p>Your IMSU PostUTME preparation journey continues. Select a course below to start practicing.</p>
     <div style="margin-top:8px; color:#cbd5e1; font-size:0.95rem;">Member since: <span id="memberSince">Just now</span></div>
     <div class="coupon-banner" id="couponBanner">
-      <strong>Coupon expires in <span id="couponDays">30</span> days</strong>
+      <strong>Coupon expires in: <span id="couponDays">--d --h --m</span></strong>
       <span class="coupon-code" id="couponCode">NEXTCAMPUS30</span>
     </div>
     <div class="expired-panel hidden" id="expiredState">
@@ -1094,6 +1094,8 @@
   let performanceChart = null;
   let pendingExam = null;
   let isCouponExpired = false;
+  let couponExpirationTime = null;
+  let couponCountdownInterval = null;
   
   let currentExam = {
     courseName: null,
@@ -1225,9 +1227,12 @@
         return;
       }
 
-      const remainingMs = expirationTime - now;
-      const remainingDays = Math.max(0, Math.ceil(remainingMs / (1000 * 60 * 60 * 24)));
-      couponDaysEl.textContent = remainingDays;
+      // Store expiration time and start live countdown
+      couponExpirationTime = expirationTime;
+      if (couponCountdownInterval) clearInterval(couponCountdownInterval);
+      updateCouponCountdown(); // Update immediately
+      couponCountdownInterval = setInterval(updateCouponCountdown, 1000); // Update every second
+
       document.getElementById('expiredState')?.classList.add('hidden');
       document.getElementById('appOverlay').style.display = 'none';
     } catch (error) {
@@ -1239,6 +1244,29 @@
       couponBanner.style.color = '#b91c1c';
       showRedeemOverlay();
     }
+  }
+
+  function updateCouponCountdown() {
+    const couponDaysEl = document.getElementById('couponDays');
+    if (!couponDaysEl || !couponExpirationTime) return;
+
+    const now = Date.now();
+    const remainingMs = couponExpirationTime - now;
+
+    if (remainingMs <= 0) {
+      // Coupon expired
+      clearInterval(couponCountdownInterval);
+      isCouponExpired = true;
+      document.getElementById('couponDays').textContent = '0';
+      disableExpiredDashboard();
+      return;
+    }
+
+    const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+
+    couponDaysEl.textContent = `${days}d ${hours}h ${minutes}m`;
   }
 
   function showRedeemOverlay() {
