@@ -333,11 +333,184 @@
       to { transform: rotate(360deg); }
     }
 
+    /* Forgot Password Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 24px;
+      width: 90%;
+      max-width: 420px;
+      padding: 40px 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      animation: slideUp 0.3s ease;
+      position: relative;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close-btn:hover {
+      color: #f59e0b;
+    }
+
+    .modal-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-header h2 {
+      font-size: 1.4rem;
+      color: #0f172b;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .modal-header p {
+      color: #64748b;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .modal-icon {
+      font-size: 2.5rem;
+      color: #f59e0b;
+      margin-bottom: 12px;
+    }
+
+    .reset-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      background: #f8fafc;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: #f59e0b;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+
+    .reset-btn, .back-btn {
+      padding: 14px;
+      border: none;
+      border-radius: 40px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .reset-btn {
+      background: #f59e0b;
+      color: #0f172b;
+    }
+
+    .reset-btn:hover {
+      background: #e08e00;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .reset-btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .back-btn {
+      background: #e2e8f0;
+      color: #334155;
+      margin-top: 8px;
+    }
+
+    .back-btn:hover {
+      background: #cbd5e1;
+    }
+
+    .success-message {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      text-align: center;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
     /* Responsive */
     @media (max-width: 500px) {
       .form-body { padding: 25px 20px; }
       .header { padding: 25px 20px; }
       .options-row { flex-direction: column; gap: 12px; align-items: flex-start; }
+      .modal-content { padding: 32px 24px; }
+      .modal-header h2 { font-size: 1.2rem; }
     }
   </style>
 </head>
@@ -385,6 +558,43 @@
   </div>
 </div>
 
+<!-- Forgot Password Modal -->
+<div class="modal-overlay" id="forgotPasswordModal">
+  <div class="modal-content">
+    <button class="modal-close-btn" id="closeModalBtn">
+      <i class="fas fa-times"></i>
+    </button>
+    
+    <div class="modal-header">
+      <div class="modal-icon"><i class="fas fa-key"></i></div>
+      <h2>Reset Your Password</h2>
+      <p>Enter your email address and we'll send you a link to reset your password.</p>
+    </div>
+
+    <div class="success-message" id="successMessage">
+      <i class="fas fa-check-circle" style="margin-right: 8px;"></i>
+      Password reset email sent! Check your inbox.
+    </div>
+
+    <form class="reset-form" id="resetForm">
+      <input 
+        type="email" 
+        id="resetEmail" 
+        class="modal-input" 
+        placeholder="Enter your email address" 
+        required
+        autocomplete="email"
+      >
+      <button type="submit" class="reset-btn" id="resetSubmitBtn">
+        <i class="fas fa-paper-plane"></i> Send Reset Link
+      </button>
+      <button type="button" class="back-btn" id="backBtn">
+        <i class="fas fa-arrow-left"></i> Back to Login
+      </button>
+    </form>
+  </div>
+</div>
+
 <script>
   // Firebase Configuration
   const firebaseConfig = {
@@ -410,6 +620,15 @@
   const rememberMeCheckbox = document.getElementById('rememberMe');
   const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
   const loginForm = document.getElementById('loginForm');
+
+  // Modal Elements
+  const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+  const resetEmail = document.getElementById('resetEmail');
+  const resetForm = document.getElementById('resetForm');
+  const resetSubmitBtn = document.getElementById('resetSubmitBtn');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const backBtn = document.getElementById('backBtn');
+  const successMessage = document.getElementById('successMessage');
 
   // Check for saved credentials
   if (localStorage.getItem('rememberedEmail')) {
@@ -534,27 +753,68 @@
     }
   }
 
-  // Forgot Password
-  async function handleForgotPassword() {
-    const email = emailInput.value.trim();
+  // Forgot Password - Modal Functions
+  function openForgotPasswordModal() {
+    forgotPasswordModal.classList.add('show');
+    resetEmail.value = '';
+    successMessage.classList.remove('show');
+    resetForm.style.display = 'flex';
+  }
+
+  function closeForgotPasswordModal() {
+    forgotPasswordModal.classList.remove('show');
+    resetEmail.value = '';
+    successMessage.classList.remove('show');
+    resetForm.style.display = 'flex';
+  }
+
+  // Handle Password Reset
+  async function handlePasswordReset(event) {
+    event.preventDefault();
+    
+    const email = resetEmail.value.trim();
     
     if (!email) {
-      showToast('Please enter your email address to reset password', true);
+      showToast('Please enter your email address', true);
       return;
     }
     
+    // Show loading state
+    resetSubmitBtn.disabled = true;
+    const originalBtnHtml = resetSubmitBtn.innerHTML;
+    resetSubmitBtn.innerHTML = '<span class="loading-spinner"></span> Sending...';
+    
     try {
       await auth.sendPasswordResetEmail(email);
-      showToast(`Password reset email sent to ${email}. Check your inbox!`);
+      
+      // Show success message
+      successMessage.classList.add('show');
+      resetForm.style.display = 'none';
+      
+      // Auto-close modal after 3 seconds
+      setTimeout(() => {
+        closeForgotPasswordModal();
+        showToast('Password reset email sent successfully! Check your inbox.', false);
+      }, 3000);
+      
     } catch (error) {
       console.error('Password reset error:', error);
       let errorMessage = 'Failed to send reset email: ';
+      
       if (error.code === 'auth/user-not-found') {
         errorMessage = 'No account found with this email address.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email format.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many attempts. Please try again later.';
       } else {
         errorMessage += error.message;
       }
+      
       showToast(errorMessage, true);
+    } finally {
+      resetSubmitBtn.disabled = false;
+      resetSubmitBtn.innerHTML = originalBtnHtml;
     }
   }
 
@@ -572,12 +832,31 @@
 
   // Event Listeners
   loginForm.addEventListener('submit', handleLogin);
-  forgotPasswordBtn.addEventListener('click', handleForgotPassword);
+  forgotPasswordBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    openForgotPasswordModal();
+  });
+  closeModalBtn.addEventListener('click', closeForgotPasswordModal);
+  backBtn.addEventListener('click', closeForgotPasswordModal);
+  resetForm.addEventListener('submit', handlePasswordReset);
+  
+  // Close modal when clicking outside
+  forgotPasswordModal.addEventListener('click', (e) => {
+    if (e.target === forgotPasswordModal) {
+      closeForgotPasswordModal();
+    }
+  });
   
   // Enter key submit
   passwordInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       handleLogin(e);
+    }
+  });
+  
+  resetEmail.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      handlePasswordReset(e);
     }
   });
 </script>
