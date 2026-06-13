@@ -742,7 +742,7 @@
       const snapshot = await db.collection('courses').get();
       
       if (snapshot.empty) {
-        coursesGrid.innerHTML = '<div style="text-align: center; padding: 20px; grid-column: 1/-1; color: #ef4444;">No courses available. Please contact admin.</div>';
+        coursesGrid.innerHTML = '<div style="text-align: center; padding: 20px; grid-column: 1/-1; color: #ef4444;">No course found, please refresh the page.</div>';
         return;
       }
 
@@ -953,7 +953,7 @@
       
       await user.sendEmailVerification();
       
-      showToast('Account created successfully! Verification email sent. Redirecting to login...');
+      showToast('Account created successfully!. Redirecting to login...');
       
       await auth.signOut();
       sessionStorage.setItem('prefillEmail', email);
